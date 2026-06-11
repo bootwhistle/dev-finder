@@ -1,5 +1,5 @@
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { Callout, Marker } from 'react-native-maps';
 import { CommunityUser } from '../types';
 
@@ -9,23 +9,37 @@ interface Props {
 }
 
 export default function UserMarker({ user, onCalloutPress }: Props) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <Marker
       coordinate={{ latitude: user.latitude, longitude: user.longitude }}
-      tracksViewChanges={false}
+      tracksViewChanges={!imageLoaded}
     >
-      <Image source={{ uri: user.avatar_url }} style={styles.avatar} />
-      <Callout onPress={onCalloutPress} tooltip={false}>
-        <TouchableOpacity style={styles.callout} activeOpacity={0.8}>
+      <View style={styles.markerWrap}>
+        <Image
+          source={{ uri: user.avatar_url }}
+          style={styles.avatar}
+          onLoad={() => setImageLoaded(true)}
+        />
+      </View>
+      <Callout onPress={onCalloutPress}>
+        <View style={styles.callout}>
           <Text style={styles.name}>{user.name}</Text>
           <Text style={styles.login}>{user.login}</Text>
-        </TouchableOpacity>
+        </View>
       </Callout>
     </Marker>
   );
 }
 
 const styles = StyleSheet.create({
+  markerWrap: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatar: {
     width: 44,
     height: 44,
