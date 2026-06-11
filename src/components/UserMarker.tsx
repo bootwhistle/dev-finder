@@ -12,26 +12,30 @@ interface Props {
 export default function UserMarker({ data, handleCalloutPress }: Props) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // highlight the first db user as "current user" (matches reference approach)
-  const isCurrentUser = data.login === (db.users as User[])[0].login;
-  const borderColor = isCurrentUser ? '#4285F4' : '#aaa';
+  const isCurrentUser = data.login === db.users[0].login;
 
   return (
     <Marker coordinate={data.coordinates} tracksViewChanges={!imageLoaded}>
-      {/* pointerEvents="none" lets touches pass through to the native Marker
-          so the callout opens on tap */}
-      <View style={styles.markerOuter} pointerEvents="none">
-        <View style={[styles.markerInner, { borderColor }]}>
-          <Image
-            source={{ uri: data.avatar_url }}
-            style={styles.avatar}
-            onLoad={() => setImageLoaded(true)}
-          />
-        </View>
+      {/* View is only here for pointerEvents — no overflow:hidden, which is
+          what caused the quarter-circle clipping bug on Android.
+          borderRadius on Image itself handles the circular shape. */}
+      <View pointerEvents="none">
+        <Image
+          source={{ uri: data.avatar_url }}
+          style={[
+            styles.avatar,
+            { borderColor: isCurrentUser ? '#4285F4' : '#fff' },
+          ]}
+          onLoad={() => setImageLoaded(true)}
+        />
       </View>
 
       <Callout onPress={handleCalloutPress}>
-        <TouchableOpacity style={styles.callout} activeOpacity={0.7} onPress={handleCalloutPress}>
+        <TouchableOpacity
+          style={styles.callout}
+          activeOpacity={0.7}
+          onPress={handleCalloutPress}
+        >
           <Text style={styles.name}>{data.name}</Text>
           {!!data.company && <Text style={styles.sub}>{data.company}</Text>}
           {!!data.bio && <Text style={styles.sub}>{data.bio}</Text>}
@@ -42,37 +46,26 @@ export default function UserMarker({ data, handleCalloutPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  markerOuter: {
-    padding: 2,
-    borderRadius: 36,
-    backgroundColor: '#fff',
-  },
-  markerInner: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    overflow: 'hidden',
-    backgroundColor: '#bbb',
-    borderWidth: 4,
-  },
   avatar: {
-    width: 60,
-    height: 60,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 4,
+    backgroundColor: '#bbb',
   },
   callout: {
-    width: 240,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    width: 280,
+    padding: 16,
   },
   name: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#111',
-    marginBottom: 2,
+    marginBottom: 6,
   },
   sub: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 2,
+    fontSize: 14,
+    color: '#555',
+    marginTop: 3,
   },
 });
