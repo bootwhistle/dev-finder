@@ -15,10 +15,10 @@ import { useUser } from '../context/UserContext';
 import { COLORS } from '../theme';
 
 const INITIAL_REGION = {
-  latitude: 37.5,
-  longitude: -122.2,
-  latitudeDelta: 1.5,
-  longitudeDelta: 1.5,
+  latitude: 51.0447,
+  longitude: -114.0719,
+  latitudeDelta: 0.15,
+  longitudeDelta: 0.15,
 };
 
 export default function SignUpScreen() {

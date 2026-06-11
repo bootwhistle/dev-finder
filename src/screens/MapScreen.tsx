@@ -12,10 +12,10 @@ import { RootStackParamList } from '../../App';
 type MapNavProp = NativeStackNavigationProp<RootStackParamList, 'Map'>;
 
 const INITIAL_REGION = {
-  latitude: 37.5,
-  longitude: -122.2,
-  latitudeDelta: 2.0,
-  longitudeDelta: 2.0,
+  latitude: 51.0447,
+  longitude: -114.0719,
+  latitudeDelta: 0.18,
+  longitudeDelta: 0.18,
 };
 
 export default function MapScreen() {

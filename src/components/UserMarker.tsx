@@ -16,12 +16,16 @@ export default function UserMarker({ user, onCalloutPress }: Props) {
       coordinate={{ latitude: user.latitude, longitude: user.longitude }}
       tracksViewChanges={!imageLoaded}
     >
-      <View style={styles.markerWrap}>
-        <Image
-          source={{ uri: user.avatar_url }}
-          style={styles.avatar}
-          onLoad={() => setImageLoaded(true)}
-        />
+      {/* Outer ring provides white border; inner circle clips image and shows
+          a gray fallback so the marker is always visible while image loads */}
+      <View style={styles.markerOuter}>
+        <View style={styles.markerInner}>
+          <Image
+            source={{ uri: user.avatar_url }}
+            style={styles.avatar}
+            onLoad={() => setImageLoaded(true)}
+          />
+        </View>
       </View>
       <Callout onPress={onCalloutPress}>
         <View style={styles.callout}>
@@ -34,18 +38,21 @@ export default function UserMarker({ user, onCalloutPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  markerWrap: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+  markerOuter: {
+    padding: 2,
+    borderRadius: 24,
+    backgroundColor: '#fff',
+  },
+  markerInner: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: '#bbb',
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2.5,
-    borderColor: '#fff',
+    width: 40,
+    height: 40,
   },
   callout: {
     paddingHorizontal: 12,
