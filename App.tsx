@@ -30,16 +30,20 @@ function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={user ? 'Main' : 'Setup'}
         screenOptions={{
           headerStyle: { backgroundColor: '#021A62' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: '600' },
         }}
       >
-        <Stack.Screen name="Setup" component={SignUpScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Main" component={MapScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Github Profile' }} />
+        {user ? (
+          <>
+            <Stack.Screen name="Main" component={MapScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Github Profile' }} />
+          </>
+        ) : (
+          <Stack.Screen name="Setup" component={SignUpScreen} options={{ headerShown: false }} />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
