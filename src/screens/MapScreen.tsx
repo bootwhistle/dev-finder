@@ -39,6 +39,8 @@ export default function MapScreen() {
       <TouchableOpacity style={styles.logoutBtn} onPress={signOut} activeOpacity={0.8}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
+
+      <Text style={styles.buildTag}>build 6</Text>
     </View>
   );
 }
@@ -65,5 +67,16 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
     fontSize: 14,
+  },
+  buildTag: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    color: '#fff',
+    fontSize: 10,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
 });
