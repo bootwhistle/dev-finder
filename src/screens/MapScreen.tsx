@@ -2,14 +2,14 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useUser } from '../context/UserContext';
 import UserMarker from '../components/UserMarker';
-import { MOCK_USERS } from '../data/mockUsers';
+import db from '../data/mockUsers';
 import { COLORS } from '../theme';
 import { RootStackParamList } from '../../App';
 
-type MapNavProp = NativeStackNavigationProp<RootStackParamList, 'Map'>;
+type MapNavProp = StackNavigationProp<RootStackParamList, 'Main'>;
 
 const INITIAL_REGION = {
   latitude: 51.0447,
@@ -25,11 +25,13 @@ export default function MapScreen() {
   return (
     <View style={styles.container}>
       <MapView style={StyleSheet.absoluteFill} initialRegion={INITIAL_REGION}>
-        {MOCK_USERS.map((u) => (
+        {db.users.map((u) => (
           <UserMarker
-            key={u.login}
-            user={u}
-            onCalloutPress={() => navigation.navigate('Profile', { username: u.login })}
+            key={u.id}
+            data={u}
+            handleCalloutPress={() =>
+              navigation.navigate('Profile', { githubUsername: u.login })
+            }
           />
         ))}
       </MapView>

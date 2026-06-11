@@ -1,5 +1,5 @@
 export const COLORS = {
-  primary: '#1B2A6B',
+  primary: '#021A62',
   white: '#ffffff',
   inputBorder: '#dddddd',
   tooltipText: '#111111',

@@ -1,15 +1,11 @@
-export interface GitHubUser {
-  login: string;
-  name: string;
-  avatar_url: string;
-  html_url: string;
-  location: string | null;
-}
+import { LatLng } from 'react-native-maps';
 
-export interface CommunityUser {
-  login: string;
+export default interface User {
+  id: number;
   name: string;
   avatar_url: string;
-  latitude: number;
-  longitude: number;
+  login: string;
+  company: string;
+  bio: string | null;
+  coordinates: LatLng;
 }

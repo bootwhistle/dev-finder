@@ -1,25 +1,18 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../../App';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
+type Props = StackScreenProps<RootStackParamList, 'Profile'>;
 
 export default function ProfileScreen({ route }: Props) {
-  const { username } = route.params;
+  const { githubUsername } = route.params;
 
   return (
-    <WebView
-      style={styles.webview}
-      source={{ uri: `https://github.com/${username}` }}
-      startInLoadingState
-    />
+    <>
+      <StatusBar style="light" />
+      <WebView style={{ flex: 1 }} source={{ uri: `https://github.com/${githubUsername}` }} />
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  webview: {
-    flex: 1,
-  },
-});
