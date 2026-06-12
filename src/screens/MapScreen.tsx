@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import UserMarker from '../components/UserMarker';
 import db from '../data/mockUsers';
 import { COLORS } from '../theme';
 import { RootStackParamList } from '../../App';
+import User from '../types';
 
 type MapNavProp = StackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -21,17 +22,20 @@ const INITIAL_REGION = {
 export default function MapScreen() {
   const navigation = useNavigation<MapNavProp>();
   const { signOut } = useUser();
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   return (
     <View style={styles.container}>
-      <MapView style={StyleSheet.absoluteFill} initialRegion={INITIAL_REGION}>
+      <MapView
+        style={StyleSheet.absoluteFill}
+        initialRegion={INITIAL_REGION}
+        onPress={() => setSelectedUser(null)}
+      >
         {db.users.map((u) => (
           <UserMarker
             key={u.id}
             data={u}
-            handleCalloutPress={() =>
-              navigation.navigate('Profile', { githubUsername: u.login })
-            }
+            onPress={() => setSelectedUser(u)}
           />
         ))}
       </MapView>
@@ -40,7 +44,38 @@ export default function MapScreen() {
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
 
-      <Text style={styles.buildTag}>build 6</Text>
+      <Text style={styles.buildTag}>build 22</Text>
+
+      {selectedUser && (
+        <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => setSelectedUser(null)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Text style={styles.closeBtnText}>✕</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.cardName}>{selectedUser.name}</Text>
+          {!!selectedUser.company && (
+            <Text style={styles.cardSub}>{selectedUser.company}</Text>
+          )}
+          {!!selectedUser.bio && (
+            <Text style={styles.cardSub}>{selectedUser.bio}</Text>
+          )}
+
+          <TouchableOpacity
+            style={styles.profileBtn}
+            activeOpacity={0.8}
+            onPress={() => {
+              setSelectedUser(null);
+              navigation.navigate('Profile', { githubUsername: selectedUser.login });
+            }}
+          >
+            <Text style={styles.profileBtnText}>Open GitHub Profile</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -78,5 +113,54 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
+  },
+  card: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 24,
+    paddingBottom: 40,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  closeBtn: {
+    position: 'absolute',
+    top: 16,
+    right: 20,
+  },
+  closeBtnText: {
+    fontSize: 18,
+    color: '#888',
+  },
+  cardName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#111',
+    marginBottom: 6,
+    marginRight: 32,
+  },
+  cardSub: {
+    fontSize: 16,
+    color: '#555',
+    marginTop: 4,
+  },
+  profileBtn: {
+    marginTop: 20,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 13,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  profileBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
