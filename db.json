@@ -7,8 +7,8 @@
       "company": "Linux Foundation",
       "name": "Linus Torvalds",
       "coordinates": {
-        "latitude": 51.0460,
-        "longitude": -114.0570
+        "latitude": 51.046,
+        "longitude": -114.057
       },
       "id": 1
     },
@@ -20,7 +20,7 @@
       "name": "Dan Abramov",
       "coordinates": {
         "latitude": 51.0606,
-        "longitude": -114.0930
+        "longitude": -114.093
       },
       "id": 2
     },
