@@ -1,3 +1,52 @@
 {
-  "users": []
+  "users": [
+    {
+      "login": "torvalds",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1024025?v=4",
+      "bio": null,
+      "company": "Linux Foundation",
+      "name": "Linus Torvalds",
+      "coordinates": {
+        "latitude": 51.0460,
+        "longitude": -114.0570
+      },
+      "id": 1
+    },
+    {
+      "login": "gaearon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/810438?v=4",
+      "bio": "Working on React",
+      "company": "Meta",
+      "name": "Dan Abramov",
+      "coordinates": {
+        "latitude": 51.0606,
+        "longitude": -114.0930
+      },
+      "id": 2
+    },
+    {
+      "login": "sindresorhus",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170270?v=4",
+      "bio": "Full-Time Open-Sourcerer",
+      "company": "@sindresorhus",
+      "name": "Sindre Sorhus",
+      "coordinates": {
+        "latitude": 51.0275,
+        "longitude": -114.0731
+      },
+      "id": 3
+    },
+    {
+      "login": "addyosmani",
+      "avatar_url": "https://avatars.githubusercontent.com/u/110953?v=4",
+      "bio": "Engineering Manager at Google",
+      "company": "Google Chrome",
+      "name": "Addy Osmani",
+      "coordinates": {
+        "latitude": 51.0303,
+        "longitude": -114.1007
+      },
+      "id": 4
+    }
+  ]
 }

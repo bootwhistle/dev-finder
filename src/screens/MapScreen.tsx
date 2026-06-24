@@ -1,67 +1,73 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MapView from 'react-native-maps';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MapView, { LatLng, Region } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useUser } from '../context/UserContext';
 import UserMarker from '../components/UserMarker';
-import { fetchUsers } from '../services/api';
+import { getUsers } from '../services/users';
+import { getFromNetworkFirst } from '../services/storage';
+import { DEFAULT_LOCATION, tryGetCurrentPosition } from '../utils/location';
 import { COLORS } from '../theme';
 import { RootStackParamList } from '../../App';
 import User from '../types';
 
 type MapNavProp = StackNavigationProp<RootStackParamList, 'Main'>;
 
-const INITIAL_REGION = {
-  latitude: 51.0447,
-  longitude: -114.0719,
-  latitudeDelta: 0.18,
-  longitudeDelta: 0.18,
-};
-
 export default function MapScreen() {
   const navigation = useNavigation<MapNavProp>();
   const { user, signOut } = useUser();
+  const mapViewRef = useRef<MapView>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const loadUsers = useCallback(async () => {
-    try {
-      const data = await fetchUsers();
-      setUsers(data);
-    } catch {
-      // backend unreachable — keep existing list
-    }
-  }, []);
+  const [devs, setDevs] = useState<User[]>([]);
+  const [userLocation, setUserLocation] = useState<LatLng>();
+  const [currentRegion, setCurrentRegion] = useState<Region>();
 
   useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+    getFromNetworkFirst('users', getUsers())
+      .then(setDevs)
+      .catch((err) => Alert.alert(String(err)));
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadUsers();
-    setRefreshing(false);
-  };
+    tryGetCurrentPosition()
+      .catch(() => DEFAULT_LOCATION)
+      .then((coords) => {
+        setUserLocation(coords);
+        setCurrentRegion({ ...coords, latitudeDelta: 0.1, longitudeDelta: 0.1 });
+      });
+  }, []);
+
+  function fitAll() {
+    const locations: LatLng[] = devs.map((dev) => dev.coordinates);
+    if (userLocation) locations.push(userLocation);
+    mapViewRef.current?.fitToCoordinates(locations, {
+      edgePadding: { top: 128, right: 64, bottom: 64, left: 64 },
+      animated: true,
+    });
+  }
+
+  if (!currentRegion) return null;
 
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapViewRef}
         style={StyleSheet.absoluteFill}
-        initialRegion={
-          user
-            ? { ...user.coordinates, latitudeDelta: 0.18, longitudeDelta: 0.18 }
-            : INITIAL_REGION
-        }
+        initialRegion={currentRegion}
+        onMapReady={fitAll}
         onPress={() => setSelectedUser(null)}
+        showsUserLocation={true}
+        showsMyLocationButton={false}
+        moveOnMarkerPress={false}
+        toolbarEnabled={false}
+        showsIndoors={false}
+        mapPadding={{ top: 0, right: 24, bottom: 0, left: 24 }}
       >
-        {users.map((u) => (
+        {devs.map((dev) => (
           <UserMarker
-            key={u.id}
-            data={u}
-            isCurrentUser={u.id === user?.id}
-            onPress={() => setSelectedUser(u)}
+            key={dev.id}
+            data={dev}
+            isCurrentUser={dev.id === user?.id}
+            onPress={() => setSelectedUser(dev)}
           />
         ))}
       </MapView>
@@ -69,21 +75,6 @@ export default function MapScreen() {
       <TouchableOpacity style={styles.logoutBtn} onPress={signOut} activeOpacity={0.8}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.refreshBtn}
-        onPress={handleRefresh}
-        disabled={refreshing}
-        activeOpacity={0.8}
-      >
-        {refreshing ? (
-          <ActivityIndicator size="small" color={COLORS.primary} />
-        ) : (
-          <Text style={styles.refreshText}>↻</Text>
-        )}
-      </TouchableOpacity>
-
-      <Text style={styles.buildTag}>build 3</Text>
 
       {selectedUser && (
         <View style={styles.card}>
@@ -125,54 +116,19 @@ const styles = StyleSheet.create({
   },
   logoutBtn: {
     position: 'absolute',
-    top: 52,
-    right: 16,
-    backgroundColor: '#fff',
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  logoutText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  refreshBtn: {
-    position: 'absolute',
-    top: 52,
-    left: 16,
-    backgroundColor: '#fff',
-    width: 40,
-    height: 40,
-    borderRadius: 8,
+    top: 64,
+    right: 24,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 4,
-    elevation: 5,
   },
-  refreshText: {
-    fontSize: 20,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  buildTag: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
+  logoutText: {
     color: '#fff',
-    fontSize: 10,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    fontWeight: '600',
+    fontSize: 14,
   },
   card: {
     position: 'absolute',

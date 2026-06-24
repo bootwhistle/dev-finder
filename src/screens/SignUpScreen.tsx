@@ -1,37 +1,51 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView from 'react-native-maps';
+import MapView, { LatLng, MapPressEvent, Marker, PoiClickEvent, Region } from 'react-native-maps';
 import { useUser } from '../context/UserContext';
+import { DEFAULT_LOCATION, tryGetCurrentPosition } from '../utils/location';
 import { COLORS } from '../theme';
-
-const INITIAL_REGION = {
-  latitude: 51.0447,
-  longitude: -114.0719,
-  latitudeDelta: 0.15,
-  longitudeDelta: 0.15,
-};
 
 export default function SignUpScreen() {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const [markerLocation, setMarkerLocation] = useState<LatLng>(DEFAULT_LOCATION);
+  const [currentRegion, setCurrentRegion] = useState<Region>({
+    ...DEFAULT_LOCATION,
+    latitudeDelta: 0.004,
+    longitudeDelta: 0.004,
+  });
   const { signIn } = useUser();
+
+  useEffect(() => {
+    tryGetCurrentPosition()
+      .then((pos) => {
+        setMarkerLocation(pos);
+        setCurrentRegion((r) => ({ ...r, ...pos }));
+      })
+      .catch(() => {
+        /* keep default location */
+      });
+  }, []);
+
+  function handleMapPress(event: MapPressEvent | PoiClickEvent) {
+    setMarkerLocation(event.nativeEvent.coordinate);
+  }
 
   const handleSignUp = async () => {
     const trimmed = username.trim();
     if (!trimmed) return;
     setLoading(true);
     try {
-      await signIn(trimmed);
+      await signIn(trimmed, markerLocation);
     } catch {
       Alert.alert('', 'There is no such username on GitHub', [{ text: 'OK' }]);
     } finally {
@@ -41,36 +55,45 @@ export default function SignUpScreen() {
 
   return (
     <View style={styles.container}>
-      <MapView style={StyleSheet.absoluteFill} initialRegion={INITIAL_REGION} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.overlay}
+      <MapView
+        style={StyleSheet.absoluteFill}
+        region={currentRegion}
+        onRegionChangeComplete={setCurrentRegion}
+        onPress={handleMapPress}
+        onPoiClick={handleMapPress}
+        showsUserLocation={true}
+        showsMyLocationButton={false}
+        toolbarEnabled={false}
+        showsIndoors={false}
+        mapPadding={{ top: 0, right: 24, bottom: 128, left: 24 }}
       >
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Insert your GitHub username"
-            placeholderTextColor="#999"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-            autoCorrect={false}
-            onSubmitEditing={handleSignUp}
-            returnKeyType="go"
-          />
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleSignUp}
-            disabled={loading}
-            activeOpacity={0.8}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Sign Up</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+        <Marker coordinate={markerLocation} />
+      </MapView>
+
+      <KeyboardAvoidingView behavior="position" style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="Insert your GitHub username"
+          placeholderTextColor="#999"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+          autoCorrect={false}
+          onSubmitEditing={handleSignUp}
+          returnKeyType="go"
+        />
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleSignUp}
+          disabled={loading}
+          activeOpacity={0.8}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Sign Up</Text>
+          )}
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
   );
@@ -80,31 +103,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  inputContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 40,
-    gap: 12,
+  form: {
+    position: 'absolute',
+    right: 0,
+    left: 0,
+    bottom: 0,
+    padding: 24,
   },
   input: {
-    height: 46,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    fontSize: 15,
     backgroundColor: '#fff',
-    color: '#111',
+    borderColor: '#031b6233',
+    borderRadius: 4,
+    borderWidth: 1,
+    height: 56,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginBottom: 16,
+    color: '#333',
+    fontSize: 16,
   },
   button: {
     backgroundColor: COLORS.primary,
-    borderRadius: 8,
-    height: 50,
+    borderRadius: 4,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -115,6 +136,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    letterSpacing: 0.3,
   },
 });
