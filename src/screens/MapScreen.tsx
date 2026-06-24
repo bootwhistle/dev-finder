@@ -26,7 +26,7 @@ export default function MapScreen() {
   useEffect(() => {
     getFromNetworkFirst('users', getUsers())
       .then(setDevs)
-      .catch((err) => Alert.alert(String(err)));
+      .catch(() => Alert.alert('Backend unreachable', 'Make sure json-server is running and the IP in users.ts is correct.'));
 
     tryGetCurrentPosition()
       .catch(() => DEFAULT_LOCATION)

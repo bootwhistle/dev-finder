@@ -48,7 +48,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    if (user) await deleteUser(user.id);
+    if (user) await deleteUser(user.id).catch(() => {});
     await removeFromStorage(STORAGE_KEY);
     setUser(null);
   };
