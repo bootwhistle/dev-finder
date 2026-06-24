@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useUser } from '../context/UserContext';
 import UserMarker from '../components/UserMarker';
-import db from '../data/mockUsers';
+import { fetchUsers } from '../services/api';
 import { COLORS } from '../theme';
 import { RootStackParamList } from '../../App';
 import User from '../types';
@@ -21,20 +21,46 @@ const INITIAL_REGION = {
 
 export default function MapScreen() {
   const navigation = useNavigation<MapNavProp>();
-  const { signOut } = useUser();
+  const { user, signOut } = useUser();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadUsers = useCallback(async () => {
+    try {
+      const data = await fetchUsers();
+      setUsers(data);
+    } catch {
+      // backend unreachable — keep existing list
+    }
+  }, []);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadUsers();
+    setRefreshing(false);
+  };
 
   return (
     <View style={styles.container}>
       <MapView
         style={StyleSheet.absoluteFill}
-        initialRegion={INITIAL_REGION}
+        initialRegion={
+          user
+            ? { ...user.coordinates, latitudeDelta: 0.18, longitudeDelta: 0.18 }
+            : INITIAL_REGION
+        }
         onPress={() => setSelectedUser(null)}
       >
-        {db.users.map((u) => (
+        {users.map((u) => (
           <UserMarker
             key={u.id}
             data={u}
+            isCurrentUser={u.id === user?.id}
             onPress={() => setSelectedUser(u)}
           />
         ))}
@@ -44,7 +70,20 @@ export default function MapScreen() {
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
 
-      <Text style={styles.buildTag}>build 22</Text>
+      <TouchableOpacity
+        style={styles.refreshBtn}
+        onPress={handleRefresh}
+        disabled={refreshing}
+        activeOpacity={0.8}
+      >
+        {refreshing ? (
+          <ActivityIndicator size="small" color={COLORS.primary} />
+        ) : (
+          <Text style={styles.refreshText}>↻</Text>
+        )}
+      </TouchableOpacity>
+
+      <Text style={styles.buildTag}>build 3</Text>
 
       {selectedUser && (
         <View style={styles.card}>
@@ -102,6 +141,27 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
     fontSize: 14,
+  },
+  refreshBtn: {
+    position: 'absolute',
+    top: 52,
+    left: 16,
+    backgroundColor: '#fff',
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  refreshText: {
+    fontSize: 20,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   buildTag: {
     position: 'absolute',

@@ -9,6 +9,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bvc.devfinder",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "DevFinder uses your location to show you on the map so other developers nearby can find you."
+      },
       "config": {
         "googleMapsApiKey": "YOUR_GOOGLE_MAPS_API_KEY"
       }
@@ -21,6 +24,10 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ],
       "config": {
         "googleMaps": {
           "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
@@ -30,6 +37,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
+    }
   }
 }

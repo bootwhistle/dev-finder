@@ -1,11 +1,11 @@
 import React from 'react';
-import { PixelRatio, StyleSheet } from 'react-native';
+import { PixelRatio } from 'react-native';
 import { Marker } from 'react-native-maps';
 import User from '../types';
-import db from '../data/mockUsers';
 
 interface Props {
   data: User;
+  isCurrentUser: boolean;
   onPress: () => void;
 }
 
@@ -19,8 +19,7 @@ function circleImageUri(url: string, sizeDp: number): string {
   );
 }
 
-export default function UserMarker({ data, onPress }: Props) {
-  const isCurrentUser = data.login === db.users[0].login;
+export default function UserMarker({ data, isCurrentUser, onPress }: Props) {
   const markerSizeDp = isCurrentUser ? 72 : 54;
 
   return (
